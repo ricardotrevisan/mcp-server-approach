@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model debtor {
+  id               String            @id @default(uuid())
+  cpf              String            @unique
+  phone            String?
+  email            String?
+  full_name        String?
+  birth_date       String?
+  mother_name      String?
+  verified         Boolean           @default(false)
+  authorized       Boolean           @default(false)
+  trust_level      Int               @default(0)
+  score            Int               @default(0)
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @default(now()) @updatedAt
+  access_logs      access_log[]
+  data_enrichments data_enrichment[]
+  profiles         profile[]
+  sms_tokens       sms_token[]
+  agreements       agreement[]
+
+  @@map("debtor")
+}
+
+model access_log {
+  id           String      @id @default(uuid())
+  debtor_id    String
+  token        String?
+  ip_address   String?
+  device_id    String?
+  finished_at  DateTime?
+  created_at   DateTime    @default(now())
+  debtor       debtor      @relation(fields: [debtor_id], references: [id])
+  exceptions   exception[]
+  utm_id       String?
+  utm_campaign String?
+  utm_source   String?
+  utm_medium   String?
+  utm_content  String?
+  utm_term     String?
+
+  @@map("access_log")
+}
+
+model sms_token {
+  id         String   @id @default(uuid())
+  debtor_id  String
+  token      String?
+  phone      String?
+  subject    String?
+  message    String?
+  message_id String?
+  expires_at DateTime @default(dbgenerated("(now() + '01:00:00'::interval)"))
+  active     Boolean  @default(true)
+  created_at DateTime @default(now())
+  debtor     debtor   @relation(fields: [debtor_id], references: [id])
+
+  @@map("sms_token")
+}
+
+model data_enrichment {
+  id         String   @id @default(uuid())
+  debtor_id  String
+  token      String
+  result     String
+  summary    String
+  created_at DateTime @default(now())
+  debtor     debtor   @relation(fields: [debtor_id], references: [id])
+
+  @@map("enrichment")
+}
+
+model profile {
+  id          String   @id @default(uuid())
+  debtor_id   String
+  phone       String?
+  email       String?
+  locale      String?
+  number      String?
+  complement  String?
+  region      String?
+  city        String?
+  postal_code String?
+  state       String?
+  pending     Boolean  @default(true)
+  active      Boolean  @default(false)
+  created_at  DateTime @default(now())
+  debtor      debtor   @relation(fields: [debtor_id], references: [id])
+
+  @@map("profile")
+}
+
+model exception {
+  id                 String     @id @default(uuid())
+  access_log_id      String
+  category           String
+  cpf                String
+  full_name          String?
+  birth_date         String?
+  phone              String?
+  email              String?
+  cpf_attempt        String?
+  full_name_attempt  String?
+  birth_date_attempt String?
+  phone_attempt      String?
+  email_attempt      String?
+  created_at         DateTime   @default(now())
+  updated_at         DateTime   @default(now()) @updatedAt
+  access_log         access_log @relation(fields: [access_log_id], references: [id])
+
+  @@map("exception")
+}
+
+model agreement {
+  id               String     @id @default(uuid())
+  debtor_id        String
+  contract         String
+  error            String
+  created_at       DateTime   @default(now())
+  agreement_number String     @default("")
+  status           Boolean    @default(false)
+  total_discount   Decimal?
+  debtor           debtor     @relation(fields: [debtor_id], references: [id])
+  proposals        proposal[]
+
+  @@map("agreement")
+}
+
+model proposal {
+  id                 String    @id @default(uuid())
+  status             Boolean   @default(true)
+  agreement_id       String
+  total_installments Int // quantidade de parcelas
+  total_value        Decimal // valor total do débito negociado
+  installment_value  Decimal // valor de cada parcela
+  total_discount     Decimal? // desconto total concedido
+  original_balance   Decimal // saldo original ou valor em débito atrasado  
+  created_at         DateTime  @default(now())
+  agreement          agreement @relation(fields: [agreement_id], references: [id])
+
+  @@map("proposal")
+}

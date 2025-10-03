@@ -1,0 +1,16 @@
+POST http://127.0.0.1:8000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+MCP-Session-ID: <session_id>
+
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "call_tool",
+  "params": {
+    "tool": "get_user_by_cpf",
+    "input": {
+      "cpf": "12345678901"
+    }
+  }
+}
