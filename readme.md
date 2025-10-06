@@ -1,4 +1,4 @@
-# NPL-MCP Project
+# NPL-MCP
 
 Proof-of-concept MCP server implementing a mock NPL strategy for LLM agent engagement in a containerized environment
 
