@@ -1,0 +1,35 @@
+# Python 
+.ambiente
+__pycache__/
+*.pyc
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+.pnpm-debug.log
+
+# Prisma
+# O client é gerado automaticamente, não precisa versionar
+/node_modules/.prisma/
+/prisma/dev.db-journal
+/prisma/test.db
+prisma/db.sqlite
+prisma/db.sqlite-journal
+.prisma_commands
+
+
+# Ambientes
+.env
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+.local
+history.md

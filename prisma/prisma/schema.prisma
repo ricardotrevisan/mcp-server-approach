@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model debtor {
+  id                  String               @id @default(uuid())
+  cpf                 String               @unique
+  phone               String?
+  email               String?
+  full_name           String?
+  birth_date          String?
+  mother_name         String?
+  verified            Boolean              @default(false)
+  authorized          Boolean              @default(false)
+  trust_level         Int                  @default(0)
+  score               Int                  @default(0)
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @default(now()) @updatedAt
+
+  // Relações
+  agreements          agreement[]
+  engageableContracts engageableContract[]
+
+  @@map("debtor")
+}
+
+model engageableContract {
+  id               String               @id @default(uuid())
+  debtor_id        String
+  strategy_id      String
+  agreement_id     String?              @unique
+  status           Boolean              @default(true)
+  age              Int                  @default(0)
+  total_value      Decimal
+  original_balance Decimal
+  created_at       DateTime             @default(now())
+
+  // Relações
+  debtor           debtor               @relation(fields: [debtor_id], references: [id])
+  strategy         negotiationStrategy  @relation(fields: [strategy_id], references: [id])
+  agreement        agreement?           @relation(fields: [agreement_id], references: [id])
+
+  @@map("engageable_contract")
+}
+
+model agreement {
+  id                 String              @id @default(uuid())
+  debtor_id          String
+  engageableContract engageableContract? @relation
+  agreement_number   String              @default("")
+  status             Boolean             @default(true)
+  total_value        Decimal
+  original_balance   Decimal
+  installments       Int
+  total_discount     Decimal
+  first_payment_date DateTime?
+  created_at         DateTime            @default(now())
+
+  debtor             debtor              @relation(fields: [debtor_id], references: [id])
+
+  @@map("agreement")
+}
+
+model negotiationStrategy {
+  id                  String               @id @default(uuid())
+  name                String               @unique
+  description         String?
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @default(now()) @updatedAt
+
+  // Relações
+  rules               negotiationRule[]
+  engageableContracts engageableContract[]
+
+  @@map("negotiation_strategy")
+}
+
+model negotiationRule {
+  id                      String              @id @default(uuid())
+  strategy_id             String
+  min_value               Decimal
+  max_value               Decimal
+  max_installments        Int
+  max_discount_percent    Int
+  min_downpayment_percent Int
+  valid_until             DateTime
+  created_at              DateTime            @default(now())
+
+  strategy                negotiationStrategy @relation(fields: [strategy_id], references: [id])
+
+  @@map("negotiation_rule")
+}
